@@ -3,70 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap Miner - Live Leaderboard</title>
-    <!-- CDN Supabase -->
+    <title>Tap Miner Game</title>
+    <!-- Memuat Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { box-sizing: border-box; }
         body {
+            background-color: #0f1117;
+            color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
-            color: #fff;
-            margin: 0;
-            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: flex-start;
             min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
-        .container {
-            background: #252538;
+        .game-container {
+            background: #181b22;
             padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            width: 100%;
-            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             text-align: center;
+            width: 100%;
+            max-width: 380px;
         }
-        h1 { margin-top: 0; color: #ffcc00; font-size: 24px; }
-        .score-board { font-size: 40px; font-weight: bold; color: #00ffcc; margin: 15px 0; }
-        .btn-tap {
-            background: #ff4757; color: white; border: none; width: 130px; height: 130px;
-            border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 6px 0 #b32e3b; transition: transform 0.1s, box-shadow 0.1s; margin: 10px 0;
+        h1 { color: #f59e0b; margin-bottom: 5px; font-size: 24px; }
+        p.subtitle { color: #9ca3af; font-size: 13px; margin-bottom: 20px; }
+        #scoreDisplay {
+            font-size: 54px;
+            font-weight: bold;
+            color: #10b981;
+            margin: 15px 0;
         }
-        .btn-tap:active { transform: translateY(4px); box-shadow: 0 2px 0 #b32e3b; }
-        input, .btn-submit {
-            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 15px;
+        .tap-btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #991b1b;
+            transition: all 0.08s ease;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        input { background: #3a3a55; color: #fff; text-align: center; outline: none; }
-        input::placeholder { color: #888; }
-        .btn-submit { background: #2ed573; color: white; font-weight: bold; cursor: pointer; }
-        .btn-submit:hover { background: #26af5f; }
+        .tap-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #991b1b;
+        }
+        .input-group {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="text"] {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background: #111318;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #f59e0b;
+        }
+        .btn-submit {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background-color: #2563eb; }
         
-        .leaderboard-section { margin-top: 25px; text-align: left; }
-        .leaderboard-section h3 { margin-bottom: 10px; border-bottom: 2px solid #3a3a55; padding-bottom: 5px; color: #ffcc00; font-size: 16px;}
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 8px; border-bottom: 1px solid #3a3a55; }
-        th { color: #aaa; text-align: left; }
-        td:nth-child(1) { text-align: center; width: 40px; color: #ffcc00; font-weight: bold; }
-        td:nth-child(3) { text-align: right; font-weight: bold; color: #00ffcc; }
+        /* Kotak Notifikasi Halus Tanpa Popup */
+        #statusMessage {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 8px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #059669; }
+        .status-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #dc2626; }
+
+        .leaderboard-section {
+            margin-top: 30px;
+            text-align: left;
+            background: #111318;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .leaderboard-section h3 { font-size: 15px; margin-bottom: 10px; color: #f59e0b; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 8px; border-bottom: 1px solid #222630; text-align: left; }
+        th { color: #9ca3af; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="game-container">
         <h1>⛏️ Tap Miner Game</h1>
-        <p style="color: #aaa; font-size: 13px;">Tap tombol secepat mungkin, lalu simpan skormu!</p>
+        <p class="subtitle">Tap tombol secepat mungkin, lalu simpan skormu!</p>
         
-        <div class="score-board" id="scoreDisplay">0</div>
-        <button class="btn-tap" onclick="tapGame()">TAP!</button>
-
-        <hr style="border: 0; border-top: 1px solid #3a3a55; margin: 20px 0;">
-
-        <div>
+        <div id="scoreDisplay">0</div>
+        
+        <button class="tap-btn" onclick="tapGame()">TAP!</button>
+        
+        <div class="input-group">
             <input type="text" id="playerName" placeholder="Ketik Nama Kamu..." maxlength="15">
             <button class="btn-submit" onclick="submitScore()">Kirim Skor ke Leaderboard</button>
+            <div id="statusMessage"></div>
         </div>
 
         <div class="leaderboard-section">
@@ -76,23 +135,33 @@
                     <tr><th>No</th><th>Nama</th><th>Skor</th></tr>
                 </thead>
                 <tbody id="leaderboardTable">
-                    <tr><td colspan="3" style="text-align:center; color:#888;">Memuat data...</td></tr>
+                    <tr><td colspan="3" style="text-align: center; color: #888;">Memuat data...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // ========================================================
-        // TEMPEL DI SINI (Hapus teks di dalam tanda petik, lalu Paste)
-        // ========================================================
+        // Konfigurasi Supabase Kamu
         const SUPABASE_URL = 'https://mvpcfkxciwqoerfsaidc.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lpHpm_wks-Y9UK6JQ_zS_ZMNQ6';
-        
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lHpm_wks-Y9Uk6JQ_z5_ZMNQ6'; // Key kamu yang tadi
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentScore = 0;
         const scoreDisplay = document.getElementById('scoreDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function showStatus(text, type) {
+            statusMessage.innerText = text;
+            statusMessage.style.display = 'block';
+            statusMessage.className = type === 'success' ? 'status-success' : 'status-error';
+            
+            // Hilangkan pesan otomatis setelah 4 detik
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 4000);
+        }
 
         function tapGame() {
             currentScore += 1;
@@ -103,18 +172,24 @@
             const nameInput = document.getElementById('playerName');
             const name = nameInput.value.trim();
 
-            if (!name) { alert('Wajib isi nama dulu bro!'); return; }
-            if (currentScore === 0) { alert('Main dulu minimal dapat beberapa skor!'); return; }
+            if (!name) {
+                showStatus('Wajib isi nama dulu bro!', 'error');
+                return;
+            }
+            if (currentScore === 0) {
+                showStatus('Main dulu minimal dapat beberapa skor!', 'error');
+                return;
+            }
 
-            const { error } = await _supabase
+            const { error } = await supabase
                 .from('leaderboard')
                 .insert([{ name: name, score: currentScore }]);
 
             if (error) {
                 console.error('Gagal kirim:', error);
-                alert('Gagal mengirim skor. Cek URL & Key Supabase kamu!');
+                showStatus('Gagal mengirim skor. Cek koneksi!', 'error');
             } else {
-                alert('Berhasil! Skor kamu sudah masuk ke leaderboard online.');
+                showStatus('Berhasil! Skor masuk leaderboard.', 'success');
                 nameInput.value = '';
                 currentScore = 0;
                 scoreDisplay.innerText = currentScore;
@@ -123,7 +198,7 @@
         }
 
         async function fetchLeaderboard() {
-            const { data, error } = await _supabase
+            const { data, error } = await supabase
                 .from('leaderboard')
                 .select('*')
                 .order('score', { ascending: false })
@@ -132,26 +207,24 @@
             const tableBody = document.getElementById('leaderboardTable');
             tableBody.innerHTML = '';
 
-            if (error || !data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada skor tercatat</td></tr>`;
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444;">Gagal memuat leaderboard</td></tr>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Belum ada skor</td></tr>`;
                 return;
             }
 
             data.forEach((row, index) => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>#${index + 1}</td>
-                        <td>${escapeHtml(row.name)}</td>
-                        <td>${row.score}</td>
-                    </tr>
-                `;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>#${index + 1}</td><td>${row.name}</td><td>${row.score}</td>`;
+                tableBody.appendChild(tr);
             });
         }
 
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
+        // Ambil data leaderboard saat halaman pertama kali dibuka
         fetchLeaderboard();
     </script>
 </body>
