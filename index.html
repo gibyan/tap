@@ -2,155 +2,336 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap Miner Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tap Miner Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            background-color: #0f1117;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-        }
-        .game-container {
-            background: #181b22;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            text-align: center;
-            width: 100%;
-            max-width: 380px;
-        }
-        h1 { color: #f59e0b; margin-bottom: 5px; font-size: 24px; }
-        p.subtitle { color: #9ca3af; font-size: 13px; margin-bottom: 20px; }
-        #scoreDisplay {
-            font-size: 54px;
-            font-weight: bold;
-            color: #10b981;
-            margin: 15px 0;
-        }
-        .tap-btn {
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            font-size: 22px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #991b1b;
-            transition: all 0.05s ease;
-            margin: 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        .tap-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #991b1b;
-        }
-        .input-group {
-            margin-top: 20px;
+        body {
+            background: radial-gradient(circle at top, #1e293b, #0f172a);
+            color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .container {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        h1 {
+            font-size: 22px;
+            color: #fbbf24;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .stats-bar span strong {
+            color: #38bdf8;
+            font-size: 14px;
+        }
+        #scoreDisplay {
+            font-size: 52px;
+            font-weight: 800;
+            color: #34d399;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+            margin: 10px 0;
+        }
+        .tap-area {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .tap-btn {
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+            color: white;
+            border: 4px solid #fca5a5;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #991b1b, 0 15px 25px rgba(239, 68, 68, 0.4);
+            transition: transform 0.05s, box-shadow 0.05s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .tap-btn:active {
+            transform: translateY(6px) scale(0.96);
+            box-shadow: 0 2px 0 #991b1b, 0 5px 10px rgba(239, 68, 68, 0.4);
+        }
+        .tap-btn small {
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+        .floating-text {
+            position: absolute;
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatUp 0.7s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+        }
+        .upgrades {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            margin: 15px 0;
+        }
+        .upg-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 10px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .upg-btn:active { transform: scale(0.96); }
+        .upg-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .upg-title { font-size: 12px; font-weight: bold; color: #fbbf24; }
+        .upg-desc { font-size: 10px; color: #94a3b8; margin: 2px 0; }
+        .upg-cost { font-size: 11px; font-weight: bold; color: #34d399; }
+
+        .submit-box {
+            background: #0f172a;
+            padding: 14px;
+            border-radius: 14px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         input[type="text"] {
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #374151;
-            background: #111318;
+            border: 1px solid #334155;
+            background: #1e293b;
             color: white;
             font-size: 14px;
             text-align: center;
             outline: none;
         }
-        input[type="text"]:focus {
-            border-color: #f59e0b;
-        }
+        input[type="text"]:focus { border-color: #38bdf8; }
         .btn-submit {
-            background-color: #3b82f6;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
             color: white;
             border: none;
-            padding: 12px;
+            padding: 11px;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        .btn-submit:hover { background-color: #2563eb; }
-        
+        .btn-submit:active { opacity: 0.85; }
         #statusMessage {
-            margin-top: 12px;
-            font-size: 13px;
+            font-size: 12px;
             padding: 8px;
-            border-radius: 6px;
+            border-radius: 8px;
             display: none;
+            margin-top: 4px;
         }
-        .status-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #059669; }
-        .status-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #dc2626; }
+        .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #059669; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #dc2626; }
 
-        .leaderboard-section {
-            margin-top: 30px;
+        .leaderboard {
+            margin-top: 18px;
+            background: #0f172a;
+            padding: 14px;
+            border-radius: 14px;
             text-align: left;
-            background: #111318;
-            padding: 15px;
-            border-radius: 10px;
         }
-        .leaderboard-section h3 { font-size: 15px; margin-bottom: 10px; color: #f59e0b; }
+        .leaderboard h3 {
+            font-size: 14px;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 8px; border-bottom: 1px solid #222630; text-align: left; }
-        th { color: #9ca3af; }
+        th, td { padding: 7px 6px; border-bottom: 1px solid #1e293b; }
+        th { color: #64748b; font-size: 11px; text-transform: uppercase; }
+        td:last-child, th:last-child { text-align: right; font-weight: bold; color: #34d399; }
+        tr:nth-child(1) td:first-child { color: #fbbf24; font-weight: bold; }
+        tr:nth-child(2) td:first-child { color: #cbd5e1; font-weight: bold; }
+        tr:nth-child(3) td:first-child { color: #d97706; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <h1>⛏️ Tap Miner Game</h1>
-        <p class="subtitle">Tap tombol secepat mungkin, lalu simpan skormu!</p>
+    <div class="container">
+        <h1>⛏️ TAP MINER PRO</h1>
         
+        <div class="stats-bar">
+            <span>Tap Power: <strong id="powerStat">+1</strong></span>
+            <span>Auto/dtk: <strong id="autoStat">0</strong></span>
+        </div>
+
         <div id="scoreDisplay">0</div>
-        
-        <!-- Menggunakan onclick langsung agar responsif di HP -->
-        <button class="tap-btn" onclick="tapGame()">TAP!</button>
-        
-        <div class="input-group">
-            <input type="text" id="playerName" placeholder="Ketik Nama Kamu..." maxlength="15">
-            <button class="btn-submit" onclick="submitScore()">Kirim Skor ke Leaderboard</button>
+
+        <div class="tap-area" id="tapArea">
+            <button class="tap-btn" id="tapBtn">
+                TAP!
+                <small>Gali Koin</small>
+            </button>
+        </div>
+
+        <div class="upgrades">
+            <button class="upg-btn" id="upgPowerBtn" disabled>
+                <div class="upg-title">⚡ Upgrade Pickaxe</div>
+                <div class="upg-desc">+1 Kekuatan Tap</div>
+                <div class="upg-cost" id="powerCost">Harga: 15</div>
+            </button>
+            <button class="upg-btn" id="upgAutoBtn" disabled>
+                <div class="upg-title">🤖 Sewa Bot Miner</div>
+                <div class="upg-desc">+1 Skor / Detik</div>
+                <div class="upg-cost" id="autoCost">Harga: 50</div>
+            </button>
+        </div>
+
+        <div class="submit-box">
+            <input type="text" id="playerName" placeholder="Masukkan Nickname..." maxlength="15">
+            <button class="btn-submit" id="submitBtn">Simpan Skor ke Global</button>
             <div id="statusMessage"></div>
         </div>
 
-        <div class="leaderboard-section">
-            <h3>🏆 Global Leaderboard (Top 5)</h3>
+        <div class="leaderboard">
+            <h3>
+                <span>🏆 TOP 10 GLOBAL</span>
+                <span style="font-size: 11px; color: #64748b; font-weight: normal;">Live</span>
+            </h3>
             <table>
                 <thead>
-                    <tr><th>No</th><th>Nama</th><th>Skor</th></tr>
+                    <tr><th>Rank</th><th>Nama</th><th>Skor</th></tr>
                 </thead>
                 <tbody id="leaderboardTable">
-                    <tr><td colspan="3" style="text-align: center; color: #888;">Memuat data...</td></tr>
+                    <tr><td colspan="3" style="text-align: center; color: #64748b;">Memuat data...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
+        // Gunakan nama variabel berbeda (supabaseClient) agar tidak bentrok dengan window.supabase
         const SUPABASE_URL = 'https://mvpcfkxciwqoerfsaidc.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lHpm_wks-Y9Uk6JQ_z5_ZMNQ6';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let score = 0;
+        let tapPower = 1;
+        let autoPerSec = 0;
+        let powerUpgradeCost = 15;
+        let autoUpgradeCost = 50;
 
-        let currentScore = 0;
         const scoreDisplay = document.getElementById('scoreDisplay');
+        const powerStat = document.getElementById('powerStat');
+        const autoStat = document.getElementById('autoStat');
+        const upgPowerBtn = document.getElementById('upgPowerBtn');
+        const upgAutoBtn = document.getElementById('upgAutoBtn');
+        const powerCostEl = document.getElementById('powerCost');
+        const autoCostEl = document.getElementById('autoCost');
         const statusMessage = document.getElementById('statusMessage');
+        const tapArea = document.getElementById('tapArea');
+
+        function updateUI() {
+            scoreDisplay.innerText = Math.floor(score);
+            powerStat.innerText = `+${tapPower}`;
+            autoStat.innerText = `${autoPerSec}/dtk`;
+            powerCostEl.innerText = `Harga: ${powerUpgradeCost}`;
+            autoCostEl.innerText = `Harga: ${autoUpgradeCost}`;
+
+            upgPowerBtn.disabled = score < powerUpgradeCost;
+            upgAutoBtn.disabled = score < autoUpgradeCost;
+        }
+
+        function spawnFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            
+            const rect = tapArea.getBoundingClientRect();
+            const offsetX = (Math.random() - 0.5) * 60;
+            el.style.left = `${(rect.width / 2) + offsetX - 15}px`;
+            el.style.top = `20px`;
+
+            tapArea.appendChild(el);
+            setTimeout(() => el.remove(), 700);
+        }
+
+        // Event Tap Utama
+        document.getElementById('tapBtn').addEventListener('click', (e) => {
+            score += tapPower;
+            updateUI();
+            spawnFloatingText(e.clientX, e.clientY, `+${tapPower}`);
+            if (navigator.vibrate) navigator.vibrate(15);
+        });
+
+        // Upgrade Pickaxe
+        upgPowerBtn.addEventListener('click', () => {
+            if (score >= powerUpgradeCost) {
+                score -= powerUpgradeCost;
+                tapPower += 1;
+                powerUpgradeCost = Math.floor(powerUpgradeCost * 1.6);
+                updateUI();
+            }
+        });
+
+        // Upgrade Auto Miner
+        upgAutoBtn.addEventListener('click', () => {
+            if (score >= autoUpgradeCost) {
+                score -= autoUpgradeCost;
+                autoPerSec += 1;
+                autoUpgradeCost = Math.floor(autoUpgradeCost * 1.7);
+                updateUI();
+            }
+        });
+
+        // Loop Auto-Miner tiap 1 detik
+        setInterval(() => {
+            if (autoPerSec > 0) {
+                score += autoPerSec;
+                updateUI();
+            }
+        }, 1000);
 
         function showStatus(text, type) {
             statusMessage.innerText = text;
@@ -161,69 +342,81 @@
             }, 4000);
         }
 
-        function tapGame() {
-            currentScore += 1;
-            scoreDisplay.innerText = currentScore;
-        }
-
-        async function submitScore() {
+        // Kirim Skor ke Supabase
+        document.getElementById('submitBtn').addEventListener('click', async () => {
             const nameInput = document.getElementById('playerName');
             const name = nameInput.value.trim();
+            const finalScore = Math.floor(score);
 
             if (!name) {
-                showStatus('Wajib isi nama dulu bro!', 'error');
+                showStatus('Isi nickname dulu sebelum simpan!', 'error');
                 return;
             }
-            if (currentScore === 0) {
-                showStatus('Main dulu minimal dapat beberapa skor!', 'error');
+            if (finalScore <= 0) {
+                showStatus('Kumpulkan skor dulu minimal 1!', 'error');
                 return;
             }
 
-            const { error } = await supabase
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'Menyimpan...';
+
+            const { error } = await supabaseClient
                 .from('leaderboard')
-                .insert([{ name: name, score: currentScore }]);
+                .insert([{ name: name, score: finalScore }]);
+
+            btn.disabled = false;
+            btn.innerText = 'Simpan Skor ke Global';
 
             if (error) {
-                console.error('Gagal kirim:', error);
-                showStatus('Gagal mengirim skor. Cek koneksi!', 'error');
+                console.error(error);
+                showStatus('Gagal menyimpan skor. Coba lagi!', 'error');
             } else {
-                showStatus('Berhasil! Skor masuk leaderboard.', 'success');
-                nameInput.value = '';
-                currentScore = 0;
-                scoreDisplay.innerText = currentScore;
+                showStatus(`Mantap! Skor ${finalScore} tersimpan!`, 'success');
+                // Reset permainan setelah simpan
+                score = 0;
+                tapPower = 1;
+                autoPerSec = 0;
+                powerUpgradeCost = 15;
+                autoUpgradeCost = 50;
+                updateUI();
                 fetchLeaderboard();
             }
-        }
+        });
 
+        // Ambil Data Leaderboard
         async function fetchLeaderboard() {
             const tableBody = document.getElementById('leaderboardTable');
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('leaderboard')
                     .select('*')
                     .order('score', { ascending: false })
-                    .limit(5);
+                    .limit(10);
 
                 if (error) throw error;
 
                 tableBody.innerHTML = '';
 
                 if (!data || data.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Belum ada skor</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b;">Belum ada skor masuk</td></tr>`;
                     return;
                 }
 
                 data.forEach((row, index) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>#${index + 1}</td><td>${row.name}</td><td>${row.score}</td>`;
+                    const rankBadge = index === 0 ? '🥇 #1' : index === 1 ? '🥈 #2' : index === 2 ? '🥉 #3' : `#${index + 1}`;
+                    tr.innerHTML = `<td>${rankBadge}</td><td>${row.name}</td><td>${row.score}</td>`;
                     tableBody.appendChild(tr);
                 });
             } catch (err) {
                 console.error(err);
-                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444;">Gagal memuat leaderboard</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444;">Gagal memuat data</td></tr>`;
             }
         }
 
+        // Jalankan pertama kali
+        updateUI();
         fetchLeaderboard();
     </script>
 </body>
