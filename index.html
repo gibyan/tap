@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tap Miner Game</title>
-    <!-- Memuat Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -52,6 +51,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         .tap-btn:active {
             transform: translateY(4px);
@@ -88,7 +89,6 @@
         }
         .btn-submit:hover { background-color: #2563eb; }
         
-        /* Kotak Notifikasi Halus Tanpa Popup */
         #statusMessage {
             margin-top: 12px;
             font-size: 13px;
@@ -120,11 +120,12 @@
         
         <div id="scoreDisplay">0</div>
         
-        <button class="tap-btn" onclick="tapGame()">TAP!</button>
+        <!-- Perbaikan event onclick langsung di tombol -->
+        <button class="tap-btn" id="tapBtn">TAP!</button>
         
         <div class="input-group">
             <input type="text" id="playerName" placeholder="Ketik Nama Kamu..." maxlength="15">
-            <button class="btn-submit" onclick="submitScore()">Kirim Skor ke Leaderboard</button>
+            <button class="btn-submit" id="submitBtn">Kirim Skor ke Leaderboard</button>
             <div id="statusMessage"></div>
         </div>
 
@@ -142,33 +143,33 @@
     </div>
 
     <script>
-        // Konfigurasi Supabase Kamu
         const SUPABASE_URL = 'https://mvpcfkxciwqoerfsaidc.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lHpm_wks-Y9Uk6JQ_z5_ZMNQ6'; // Key kamu yang tadi
+        const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lHpm_wks-Y9Uk6JQ_z5_ZMNQ6';
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentScore = 0;
         const scoreDisplay = document.getElementById('scoreDisplay');
         const statusMessage = document.getElementById('statusMessage');
+        const tapBtn = document.getElementById('tapBtn');
+        const submitBtn = document.getElementById('submitBtn');
 
         function showStatus(text, type) {
             statusMessage.innerText = text;
             statusMessage.style.display = 'block';
             statusMessage.className = type === 'success' ? 'status-success' : 'status-error';
-            
-            // Hilangkan pesan otomatis setelah 4 detik
             setTimeout(() => {
                 statusMessage.style.display = 'none';
             }, 4000);
         }
 
-        function tapGame() {
+        // Event listener biar tombol TAP di HP langsung responsif
+        tapBtn.addEventListener('click', () => {
             currentScore += 1;
             scoreDisplay.innerText = currentScore;
-        }
+        });
 
-        async function submitScore() {
+        submitBtn.addEventListener('click', async () => {
             const nameInput = document.getElementById('playerName');
             const name = nameInput.value.trim();
 
@@ -195,36 +196,37 @@
                 scoreDisplay.innerText = currentScore;
                 fetchLeaderboard();
             }
-        }
+        });
 
         async function fetchLeaderboard() {
-            const { data, error } = await supabase
-                .from('leaderboard')
-                .select('*')
-                .order('score', { ascending: false })
-                .limit(5);
-
             const tableBody = document.getElementById('leaderboardTable');
-            tableBody.innerHTML = '';
+            try {
+                const { data, error } = await supabase
+                    .from('leaderboard')
+                    .select('*')
+                    .order('score', { ascending: false })
+                    .limit(5);
 
-            if (error) {
+                if (error) throw error;
+
+                tableBody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Belum ada skor</td></tr>`;
+                    return;
+                }
+
+                data.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>#${index + 1}</td><td>${row.name}</td><td>${row.score}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
                 tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444;">Gagal memuat leaderboard</td></tr>`;
-                return;
             }
-
-            if (!data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Belum ada skor</td></tr>`;
-                return;
-            }
-
-            data.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>#${index + 1}</td><td>${row.name}</td><td>${row.score}</td>`;
-                tableBody.appendChild(tr);
-            });
         }
 
-        // Ambil data leaderboard saat halaman pertama kali dibuka
         fetchLeaderboard();
     </script>
 </body>
