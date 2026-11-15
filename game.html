@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Miner - Live Leaderboard</title>
+    <!-- CDN Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #252538;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { margin-top: 0; color: #ffcc00; font-size: 24px; }
+        .score-board { font-size: 40px; font-weight: bold; color: #00ffcc; margin: 15px 0; }
+        .btn-tap {
+            background: #ff4757; color: white; border: none; width: 130px; height: 130px;
+            border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px 0 #b32e3b; transition: transform 0.1s, box-shadow 0.1s; margin: 10px 0;
+        }
+        .btn-tap:active { transform: translateY(4px); box-shadow: 0 2px 0 #b32e3b; }
+        input, .btn-submit {
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 15px;
+        }
+        input { background: #3a3a55; color: #fff; text-align: center; outline: none; }
+        input::placeholder { color: #888; }
+        .btn-submit { background: #2ed573; color: white; font-weight: bold; cursor: pointer; }
+        .btn-submit:hover { background: #26af5f; }
+        
+        .leaderboard-section { margin-top: 25px; text-align: left; }
+        .leaderboard-section h3 { margin-bottom: 10px; border-bottom: 2px solid #3a3a55; padding-bottom: 5px; color: #ffcc00; font-size: 16px;}
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 8px; border-bottom: 1px solid #3a3a55; }
+        th { color: #aaa; text-align: left; }
+        td:nth-child(1) { text-align: center; width: 40px; color: #ffcc00; font-weight: bold; }
+        td:nth-child(3) { text-align: right; font-weight: bold; color: #00ffcc; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⛏️ Tap Miner Game</h1>
+        <p style="color: #aaa; font-size: 13px;">Tap tombol secepat mungkin, lalu simpan skormu!</p>
+        
+        <div class="score-board" id="scoreDisplay">0</div>
+        <button class="btn-tap" onclick="tapGame()">TAP!</button>
+
+        <hr style="border: 0; border-top: 1px solid #3a3a55; margin: 20px 0;">
+
+        <div>
+            <input type="text" id="playerName" placeholder="Ketik Nama Kamu..." maxlength="15">
+            <button class="btn-submit" onclick="submitScore()">Kirim Skor ke Leaderboard</button>
+        </div>
+
+        <div class="leaderboard-section">
+            <h3>🏆 Global Leaderboard (Top 5)</h3>
+            <table>
+                <thead>
+                    <tr><th>No</th><th>Nama</th><th>Skor</th></tr>
+                </thead>
+                <tbody id="leaderboardTable">
+                    <tr><td colspan="3" style="text-align:center; color:#888;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================
+        // TEMPEL DI SINI (Hapus teks di dalam tanda petik, lalu Paste)
+        // ========================================================
+        const SUPABASE_URL = 'https://mvpcfkxciwqoerfsaidc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_yvLG1lpHpm_wks-Y9UK6JQ_zS_ZMNQ6';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentScore = 0;
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        function tapGame() {
+            currentScore += 1;
+            scoreDisplay.innerText = currentScore;
+        }
+
+        async function submitScore() {
+            const nameInput = document.getElementById('playerName');
+            const name = nameInput.value.trim();
+
+            if (!name) { alert('Wajib isi nama dulu bro!'); return; }
+            if (currentScore === 0) { alert('Main dulu minimal dapat beberapa skor!'); return; }
+
+            const { error } = await _supabase
+                .from('leaderboard')
+                .insert([{ name: name, score: currentScore }]);
+
+            if (error) {
+                console.error('Gagal kirim:', error);
+                alert('Gagal mengirim skor. Cek URL & Key Supabase kamu!');
+            } else {
+                alert('Berhasil! Skor kamu sudah masuk ke leaderboard online.');
+                nameInput.value = '';
+                currentScore = 0;
+                scoreDisplay.innerText = currentScore;
+                fetchLeaderboard();
+            }
+        }
+
+        async function fetchLeaderboard() {
+            const { data, error } = await _supabase
+                .from('leaderboard')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(5);
+
+            const tableBody = document.getElementById('leaderboardTable');
+            tableBody.innerHTML = '';
+
+            if (error || !data || data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada skor tercatat</td></tr>`;
+                return;
+            }
+
+            data.forEach((row, index) => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>#${index + 1}</td>
+                        <td>${escapeHtml(row.name)}</td>
+                        <td>${row.score}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        fetchLeaderboard();
+    </script>
+</body>
+</html>
