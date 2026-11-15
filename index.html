@@ -46,7 +46,7 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 6px 0 #991b1b;
-            transition: all 0.08s ease;
+            transition: all 0.05s ease;
             margin: 15px auto;
             display: flex;
             align-items: center;
@@ -120,12 +120,12 @@
         
         <div id="scoreDisplay">0</div>
         
-        <!-- Perbaikan event onclick langsung di tombol -->
-        <button class="tap-btn" id="tapBtn">TAP!</button>
+        <!-- Menggunakan onclick langsung agar responsif di HP -->
+        <button class="tap-btn" onclick="tapGame()">TAP!</button>
         
         <div class="input-group">
             <input type="text" id="playerName" placeholder="Ketik Nama Kamu..." maxlength="15">
-            <button class="btn-submit" id="submitBtn">Kirim Skor ke Leaderboard</button>
+            <button class="btn-submit" onclick="submitScore()">Kirim Skor ke Leaderboard</button>
             <div id="statusMessage"></div>
         </div>
 
@@ -151,8 +151,6 @@
         let currentScore = 0;
         const scoreDisplay = document.getElementById('scoreDisplay');
         const statusMessage = document.getElementById('statusMessage');
-        const tapBtn = document.getElementById('tapBtn');
-        const submitBtn = document.getElementById('submitBtn');
 
         function showStatus(text, type) {
             statusMessage.innerText = text;
@@ -163,13 +161,12 @@
             }, 4000);
         }
 
-        // Event listener biar tombol TAP di HP langsung responsif
-        tapBtn.addEventListener('click', () => {
+        function tapGame() {
             currentScore += 1;
             scoreDisplay.innerText = currentScore;
-        });
+        }
 
-        submitBtn.addEventListener('click', async () => {
+        async function submitScore() {
             const nameInput = document.getElementById('playerName');
             const name = nameInput.value.trim();
 
@@ -196,7 +193,7 @@
                 scoreDisplay.innerText = currentScore;
                 fetchLeaderboard();
             }
-        });
+        }
 
         async function fetchLeaderboard() {
             const tableBody = document.getElementById('leaderboardTable');
